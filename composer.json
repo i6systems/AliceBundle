@@ -24,7 +24,7 @@
     "require": {
         "php": ">=5.4.0",
         "nelmio/alice": "~2.1",
-        "symfony/finder": "^2.7|~3.0"
+        "symfony/finder": "^2.7|~3.0|~4.0"
     },
     "require-dev": {
         "doctrine/doctrine-bundle": "dev-sharding-erb as 1.2.x-dev",
@@ -35,12 +35,12 @@
         "doctrine/phpcr-bundle": "^1.3",
         "doctrine/phpcr-odm": "^1.2",
         "jackalope/jackalope-doctrine-dbal": "^1.2",
-        "symfony/console": "~2.3|~3.0",
-        "symfony/framework-bundle": "~2.3|~3.0",
-        "symfony/yaml": "~2.3|~3.0",
-        "symfony/validator": "~2.3|~3.0",
+        "symfony/console": "~2.3|~3.0|~4.0",
+        "symfony/framework-bundle": "~2.3|~3.0|~4.0",
+        "symfony/yaml": "~2.3|~3.0|~4.0",
+        "symfony/validator": "~2.3|~3.0|~4.0",
         "sllh/php-cs-fixer-styleci-bridge": "~1.0",
-        "symfony/phpunit-bridge": "^2.7.4|~3.0",
+        "symfony/phpunit-bridge": "^2.7.4|~3.0|~4.0",
         "phpunit/phpunit": "~4.8"
     },
     "suggest": {
