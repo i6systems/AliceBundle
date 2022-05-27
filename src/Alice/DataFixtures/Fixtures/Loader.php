@@ -27,7 +27,7 @@ class Loader extends \Nelmio\Alice\Fixtures\Loader implements LoaderInterface
      * @param int           $seed
      * @param array         $parameters
      */
-    public function __construct($locale = 'en_US', ProviderChain $providerChain, $seed = 1, array $parameters = [])
+    public function __construct($locale = 'en_US', ProviderChain $providerChain = null, $seed = 1, array $parameters = [])
     {
         parent::__construct($locale, $providerChain->getProviders(), $seed, $parameters);
     }
