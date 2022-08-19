@@ -11,8 +11,7 @@
 
 namespace Hautelook\AliceBundle\Doctrine\Command;
 
-use Doctrine\Bundle\DoctrineBundle\Registry;
-use Doctrine\Common\Persistence\ManagerRegistry;
+use Doctrine\Bundle\MongoDBBundle\ManagerRegistry;
 use Doctrine\DBAL\Sharding\PoolingShardConnection;
 use Hautelook\AliceBundle\Alice\DataFixtures\Fixtures\LoaderInterface as FixturesLoaderInterface;
 use Hautelook\AliceBundle\Alice\DataFixtures\LoaderInterface;
