@@ -11,7 +11,7 @@
 
 namespace Hautelook\AliceBundle\Doctrine\DataFixtures\Executor;
 
-use Doctrine\Common\Persistence\ObjectManager;
+use Doctrine\Persistence\ObjectManager;
 use Hautelook\AliceBundle\Alice\DataFixtures\LoaderInterface;
 
 /**
