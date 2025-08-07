@@ -24,7 +24,7 @@
     "require": {
         "php": ">=5.4.0",
         "nelmio/alice": "~2.1",
-        "symfony/finder": "^2.7|~3.0|~4.0"
+        "symfony/finder": "^5.0 || ^6.0 || ^7.0"
     },
     "require-dev": {
         "doctrine/doctrine-bundle": "dev-sharding-erb as 1.2.x-dev",
