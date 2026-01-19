@@ -23,7 +23,7 @@
     ],
     "require": {
         "php": ">=5.4.0",
-        "nelmio/alice": "~2.1",
+        "nelmio/alice": "~2.1 || ^4.0",
         "symfony/finder": "^5.0 || ^6.0 || ^7.0"
     },
     "require-dev": {
