@@ -12,7 +12,6 @@
 namespace Hautelook\AliceBundle\Doctrine\Finder;
 
 use Hautelook\AliceBundle\Doctrine\DataFixtures\LoaderInterface;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Finder\Finder as SymfonyFinder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -23,7 +22,7 @@ use Symfony\Component\HttpKernel\Bundle\BundleInterface;
  *
  * @author Théo FIDRY <theo.fidry@gmail.com>
  */
-class FixturesFinder extends \Hautelook\AliceBundle\Finder\FixturesFinder implements ContainerAwareInterface
+class FixturesFinder extends \Hautelook\AliceBundle\Finder\FixturesFinder
 {
     /**
      * @var ContainerInterface|null
@@ -114,8 +113,14 @@ class FixturesFinder extends \Hautelook\AliceBundle\Finder\FixturesFinder implem
                     $loader = new $className();
                     $loaders[$className] = $loader;
 
-                    if ($loader instanceof ContainerAwareInterface) {
-                        $loader->setContainer($this->container);
+                    if (null !== $this->container) {
+                        $containerAwareInterface = 'Symfony\\Component\\DependencyInjection\\ContainerAwareInterface';
+
+                        if (interface_exists($containerAwareInterface) && $loader instanceof $containerAwareInterface) {
+                            $loader->setContainer($this->container);
+                        } elseif (method_exists($loader, 'setContainer')) {
+                            $loader->setContainer($this->container);
+                        }
                     }
                 }
             }
