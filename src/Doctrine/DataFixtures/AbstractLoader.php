@@ -12,7 +12,6 @@
 namespace Hautelook\AliceBundle\Doctrine\DataFixtures;
 
 use Doctrine\Persistence\ObjectManager;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -22,10 +21,10 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * @author Théo FIDRY <theo.fidry@gmail.com>
  * @author Sullivan Senechal <soullivaneuh@gmail.com>
  */
-abstract class AbstractLoader implements ContainerAwareInterface, LoaderInterface
+abstract class AbstractLoader implements LoaderInterface
 {
     /**
-     * @var ContainerInterface
+    * @var ContainerInterface|null
      */
     protected $container;
 
