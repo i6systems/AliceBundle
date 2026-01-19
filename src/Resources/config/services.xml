@@ -22,7 +22,7 @@
 
         <service id="hautelook_alice.doctrine.executor.fixtures_executor"
                  class="Hautelook\AliceBundle\Doctrine\DataFixtures\Executor\FixturesExecutor"
-                 lazy="true" />
+                 public="true" autowire="true" />
 
         <service id="hautelook_alice.alice.fixtures.loader"
                  class="Hautelook\AliceBundle\Alice\DataFixtures\Fixtures\Loader">

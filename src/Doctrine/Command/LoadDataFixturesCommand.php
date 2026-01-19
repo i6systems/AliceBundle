@@ -149,7 +149,7 @@ class LoadDataFixturesCommand extends Command
      *
      * \RuntimeException Unsupported Application type
      */
-    protected function execute(InputInterface $input, OutputInterface $output)
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         if (false !== strpos($input->getFirstArgument(), 'hautelook_alice:fixtures:load')
             || false !== strpos($input->getFirstArgument(), 'h:f:l')
@@ -168,7 +168,7 @@ class LoadDataFixturesCommand extends Command
                     false
                 )
             ) {
-                return;
+                return 1;
             }
         }
 
@@ -196,6 +196,8 @@ class LoadDataFixturesCommand extends Command
             $output->writeln(sprintf('      <comment>-</comment> <info>%s</info>', $fixture));
         }
 
+        $output->writeln('Preparing to load fixtures');
+
         $truncate = $input->hasOption('purge-with-truncate') ? $input->getOption('purge-with-truncate') : false;
 
         // Shard database
@@ -210,17 +212,32 @@ class LoadDataFixturesCommand extends Command
             $connection->connect($shard);
         }
 
-        $this->fixturesExecutor->execute(
-            $manager,
-            $this->loaderGenerator->generate($this->loader, $this->fixturesLoader, $bundles, $environment),
-            $fixtures,
-            $input->getOption('append'),
-            function ($message) use ($output) {
-                $output->writeln(sprintf('  <comment>></comment> <info>%s</info>', $message));
-            },
-            $truncate
-        );
-        $output->writeln(sprintf('  <comment>></comment> <info>%s</info>', 'fixtures loaded'));
+        $output->writeln('Creating loader generator...');
+
+        $loaderGenerator = $this->loaderGenerator->generate($this->loader, $this->fixturesLoader, $bundles, $environment);
+        $output->writeln(sprintf('Created (%s)', $loaderGenerator::class));
+
+        $output->writeln(sprintf('Running fixtures executor (%s)...', $this->fixturesExecutor::class));
+
+        try {
+            $this->fixturesExecutor->execute(
+                $manager,
+                $loaderGenerator,
+                $fixtures,
+                $input->getOption('append'),
+                function ($message) use ($output) {
+                    $output->writeln(sprintf('  <comment>></comment> <info>%s</info>', $message));
+                },
+                $truncate
+            );
+            $output->writeln(sprintf('  <comment>></comment> <info>%s</info>', 'fixtures loaded'));
+        } catch (\Throwable $e) {
+            $output->writeln(sprintf('  <error>Error occurred while loading fixtures: %s</error>', $e->getMessage()));
+
+            return Command::FAILURE;
+        }
+
+        return Command::SUCCESS;
     }
 
     /**

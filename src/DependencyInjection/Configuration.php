@@ -28,10 +28,10 @@ class Configuration implements ConfigurationInterface
     /**
      * {@inheritdoc}
      */
-    public function getConfigTreeBuilder()
+    public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder();
-        $rootNode = $treeBuilder->root('hautelook_alice');
+        $treeBuilder = new TreeBuilder('hautelook_alice');
+        $rootNode = $treeBuilder->getRootNode();
 
         $rootNode
             ->children()

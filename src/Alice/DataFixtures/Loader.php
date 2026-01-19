@@ -199,7 +199,7 @@ class Loader implements LoaderInterface
                 }
 
                 $objects = array_merge($objects, $dataSet);
-            } catch (\UnexpectedValueException $exception) {
+            } catch (\Exception $exception) {
                 $this->registerErrorMessage($fixtureFilePath, $exception->getMessage());
             }
         }
@@ -241,6 +241,8 @@ class Loader implements LoaderInterface
         if (true === empty($errorMessage)) {
             return;
         }
+
+        echo sprintf('loader error message: %s%sfrom fixture file: %s', $errorMessage, PHP_EOL, $fixtureFilePath);
 
         if (!isset($this->errorMessages[$fixtureFilePath])) {
             $this->errorMessages[$fixtureFilePath] = [];

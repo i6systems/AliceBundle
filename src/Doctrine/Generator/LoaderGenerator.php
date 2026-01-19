@@ -11,6 +11,7 @@
 
 namespace Hautelook\AliceBundle\Doctrine\Generator;
 
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Hautelook\AliceBundle\Alice\DataFixtures\Fixtures\LoaderInterface as FixturesLoaderInterface;
 use Hautelook\AliceBundle\Alice\DataFixtures\Loader;
 use Hautelook\AliceBundle\Alice\DataFixtures\LoaderInterface;
@@ -29,7 +30,7 @@ class LoaderGenerator implements LoaderGeneratorInterface
     /**
      * @param FixturesFinder $fixturesFinder
      */
-    public function __construct(FixturesFinder $fixturesFinder)
+    public function __construct(FixturesFinder $fixturesFinder, private ReferenceRepository $referenceRepository)
     {
         $this->fixturesFinder = $fixturesFinder;
     }
@@ -56,7 +57,8 @@ class LoaderGenerator implements LoaderGeneratorInterface
             $_fixturesLoader,
             $loader->getProcessorChain(),
             $loader->getPersistOnce(),
-            $loader->getLoadingLimit()
+            $loader->getLoadingLimit(),
+            $this->referenceRepository
         );
     }
 }

@@ -14,6 +14,7 @@ namespace Hautelook\AliceBundle\Doctrine\DataFixtures\Executor;
 use Doctrine\Common\DataFixtures\Purger\MongoDBPurger;
 use Doctrine\Common\DataFixtures\Purger\ORMPurger;
 use Doctrine\Common\DataFixtures\Purger\PHPCRPurger;
+use Doctrine\Common\DataFixtures\ReferenceRepository;
 use Doctrine\Persistence\ObjectManager;
 use Doctrine\ODM\MongoDB\DocumentManager as MongoDBDocumentManager;
 use Doctrine\ODM\PHPCR\DocumentManager as PHPCRDocumentManager;
@@ -25,6 +26,11 @@ use Hautelook\AliceBundle\Alice\DataFixtures\LoaderInterface;
  */
 class FixturesExecutor implements FixturesExecutorInterface
 {
+    public function __construct(
+        private ReferenceRepository $referenceRepository
+    ) {
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -39,6 +45,7 @@ class FixturesExecutor implements FixturesExecutorInterface
         // Get executor
         $executor = $this->getExecutor($manager, $loader, $truncate);
         $executor->setLogger($loggerCallable);
+        $executor->setReferenceRepository($this->referenceRepository);
 
         // Purge database and load fixtures
         $executor->execute($fixturesFiles, $append);
