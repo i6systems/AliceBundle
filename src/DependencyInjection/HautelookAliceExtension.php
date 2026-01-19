@@ -11,85 +11,104 @@
 
 namespace Hautelook\AliceBundle\DependencyInjection;
 
-use Doctrine\Bundle\DoctrineBundle\DoctrineBundle;
-use Fidry\AliceDataFixtures\Bridge\Symfony\FidryAliceDataFixturesBundle;
-use Hautelook\AliceBundle\HautelookAliceBundle;
-use LogicException;
+use Symfony\Component\Config\Definition\Exception\InvalidConfigurationException;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\Finder\Finder;
+use Symfony\Component\DependencyInjection\Definition;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
+use Symfony\Component\DependencyInjection\Loader;
+use Symfony\Component\DependencyInjection\Reference;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
 /**
- * @private
+ * The extension of this bundle.
  *
  * @author Baldur Rensch <brensch@gmail.com>
- * @author Théo FIDRY <theo.fidry@gmail.com>
- * @author Kévin Dunglas <dunglas@gmail.com>
  */
-final class HautelookAliceExtension extends Extension
+class HautelookAliceExtension extends Extension implements PrependExtensionInterface
 {
-    const SERVICES_DIR = __DIR__.'/../../resources/config';
+    /**
+     * @var array
+     */
+    private $extensions = [];
 
     /**
      * {@inheritdoc}
+     *
+     * Gets Doctrine extensions.
+     */
+    public function prepend(ContainerBuilder $container)
+    {
+        $this->extensions[Configuration::ORM_DRIVER] = $container->getExtensionConfig('doctrine');
+        $this->extensions[Configuration::MONGODB_DRIVER] = $container->getExtensionConfig('doctrine_mongodb');
+        $this->extensions[Configuration::PHPCR_DRIVER] = $container->getExtensionConfig('doctrine_phpcr');
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @throws InvalidConfigurationException
      */
     public function load(array $configs, ContainerBuilder $container)
     {
-        $missingBundles = [DoctrineBundle::class => true, FidryAliceDataFixturesBundle::class => true];
-        foreach ($container->getParameter('kernel.bundles') as $bundle) {
-            unset($missingBundles[$bundle]);
-            if (!$missingBundles) {
-                break;
+        $configuration = new Configuration();
+        $config = $this->processConfiguration($configuration, $configs);
+
+        foreach ($config as $key => $value) {
+            $container->setParameter($this->getAlias().'.'.$key, $value);
+        }
+
+        $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
+        $loader->load('services.xml');
+
+        // Deprecated factory methods handling.
+        // To be removed and set directly on config file when bumping Symfony requirements to >=2.6
+        $aliceFakerDefinition = $container->getDefinition('hautelook_alice.faker');
+        if (method_exists($aliceFakerDefinition, 'setFactory')) {
+            $aliceFakerDefinition->setFactory(['Faker\Factory', 'create']);
+        } else {
+            $aliceFakerDefinition->setFactoryClass('Faker\Factory');
+            $aliceFakerDefinition->setFactoryMethod('create');
+        }
+
+        foreach ($config['db_drivers'] as $driver => $isEnabled) {
+            if (true === $isEnabled
+                || (null === $isEnabled && true === $this->isExtensionEnabled($driver))
+            ) {
+                $loader->load(sprintf('%s.xml', $driver));
+
+                if ('orm' === $driver) {
+                    $this->setCommandFactory($container->getDefinition('hautelook_alice.doctrine.command.deprecated_load_command'));
+                    $this->setCommandFactory($container->getDefinition('hautelook_alice.doctrine.command.load_command'));
+                } else {
+                    $this->setCommandFactory($container->getDefinition(sprintf('hautelook_alice.doctrine.%s.command.load_command', $driver)));
+                }
             }
         }
 
-        if ($missingBundles) {
-            throw new LogicException(sprintf(
-                'To register "%s", you also need: "%s".',
-                HautelookAliceBundle::class,
-                implode('", "', array_keys($missingBundles))
-            ));
-        }
+        $container->getDefinition('hautelook_alice.alice.fixtures.loader')
+            ->replaceArgument(3, $container->getParameterBag()->all());
+    }
 
-        $this->loadConfig($configs, $container);
-        $this->loadServices($container);
+    private function setCommandFactory(Definition $commandDefinition)
+    {
+        // Deprecated factory methods handling.
+        // To be removed and set directly on config file when bumping Symfony requirements to >=2.6
+        if (method_exists($commandDefinition, 'setFactory')) {
+            $commandDefinition->setFactory([new Reference('hautelook_alice.doctrine.command_factory'), 'createCommand']);
+        } else {
+            $commandDefinition->setFactoryService('hautelook_alice.doctrine.command_factory');
+            $commandDefinition->setFactoryMethod('createCommand');
+        }
     }
 
     /**
-     * Loads alice configuration and add the configuration values to the application parameters.
+     * @param string $driver
      *
-     * @throws \InvalidArgumentException
-     * @throws \Exception
+     * @return bool
      */
-    private function loadConfig(array $configs, ContainerBuilder $container)
+    private function isExtensionEnabled($driver)
     {
-        $configuration = new Configuration();
-        $processedConfiguration = $this->processConfiguration($configuration, $configs);
-
-        foreach ($processedConfiguration as $key => $value) {
-            $container->setParameter(
-                $this->getAlias().'.'.$key,
-                $value
-            );
-        }
-    }
-
-    /**
-     * Loads all the services declarations.
-     */
-    private function loadServices(ContainerBuilder $container)
-    {
-        $loader = new XmlFileLoader($container, new FileLocator(self::SERVICES_DIR));
-        $finder = new Finder();
-
-        $finder->files()->in(self::SERVICES_DIR);
-
-        foreach ($finder as $file) {
-            $loader->load(
-                $file->getRelativePathname()
-            );
-        }
+        return !empty($this->extensions[$driver]);
     }
 }
